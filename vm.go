@@ -10,13 +10,6 @@ type byteStream interface {
 	io.ByteReader
 }
 
-type vm struct {
-	S cell
-	E cell
-	C byteStream
-	D cell
-}
-
 type operation byte
 
 const (
