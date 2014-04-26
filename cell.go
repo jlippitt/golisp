@@ -10,8 +10,10 @@ type cell interface{}
 
 type nilCell struct{}
 
+var theNilCell nilCell = nilCell{}
+
 func newNilCell() *nilCell {
-	return &nilCell{}
+	return &theNilCell
 }
 
 // CONS
@@ -29,8 +31,30 @@ func (self *consCell) Car() cell {
 	return self.car
 }
 
+func (self *consCell) SetCar(car cell) {
+	self.car = car
+}
+
 func (self *consCell) Cdr() cell {
 	return self.cdr
+}
+
+func (self *consCell) SetCdr(cdr cell) {
+	self.cdr = cdr
+}
+
+// SYMBOL
+
+type symbolCell struct {
+	value string
+}
+
+func newSymbolCell(value string) *symbolCell {
+	return &symbolCell{value: value}
+}
+
+func (self *symbolCell) Value() string {
+	return self.value
 }
 
 // FIXNUM
@@ -68,6 +92,8 @@ func dump(cell cell) string {
 		return "()"
 	case *consCell:
 		return "(" + dump(cell.Car()) + " . " + dump(cell.Cdr()) + ")"
+	case *symbolCell:
+		return cell.Value()
 	case *fixNumCell:
 		return strconv.FormatInt(cell.Value(), 10)
 	default:

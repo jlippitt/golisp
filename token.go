@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -88,6 +89,17 @@ func (self *tokenizer) Type() tokenType {
 
 func (self *tokenizer) StringValue() string {
 	return self.token.Value
+}
+
+func (self *tokenizer) IntValue() int64 {
+	var value int64
+	var err error
+
+	if value, err = strconv.ParseInt(self.token.Value, 10, 64); err != nil {
+		panic(err)
+	}
+
+	return value
 }
 
 func (self *tokenizer) nextChar() {
