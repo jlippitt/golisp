@@ -1,13 +1,19 @@
 package main
 
-import "log"
+import (
+	"fmt"
+	"os"
+)
 
 func main() {
-	code := "(+ 6 5)"
+	if len(os.Args) < 2 {
+		fmt.Println("No code to execute")
+		os.Exit(1)
+	}
 
-	byteCode := generateCode(parse(code))
+	byteCode := generateCode(parse(os.Args[1]))
 
 	result := run(byteCode)
 
-	log.Print("= " + dump(result))
+	fmt.Println("= " + dump(result))
 }
