@@ -25,6 +25,6 @@ func TestAddition(t *testing.T) {
 		}
 
 	default:
-		t.Error("Expected type FixNum")
+		t.Errorf("Expected type FixNum, got %s", dump(returnValue))
 	}
 }

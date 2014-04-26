@@ -62,7 +62,7 @@ func run(code byteStream) cell {
 }
 
 func opNil(vm *vm) {
-	vm.S = push(vm.S, newNilCell())
+	push(&vm.S, newNilCell())
 }
 
 func opLdc(vm *vm) {
@@ -78,17 +78,11 @@ func opLdc(vm *vm) {
 		intVal += int64(byte)
 	}
 
-	vm.S = push(vm.S, newFixNumCell(intVal))
+	push(&vm.S, newFixNumCell(intVal))
 }
 
 func opAdd(vm *vm) {
-	var lhs, rhs cell
-
-	vm.S, rhs = pop(vm.S)
-	vm.S, lhs = pop(vm.S)
-
-	vm.S = push(
-		vm.S,
-		newFixNumCell(lhs.(*fixNumCell).Value()+rhs.(*fixNumCell).Value()),
-	)
+	rhs := pop(&vm.S).(*fixNumCell).Value()
+	lhs := pop(&vm.S).(*fixNumCell).Value()
+	push(&vm.S, newFixNumCell(lhs+rhs))
 }

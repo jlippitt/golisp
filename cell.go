@@ -1,5 +1,7 @@
 package main
 
+import "strconv"
+
 type cellType byte
 
 type cell interface{}
@@ -47,11 +49,28 @@ func (self *fixNumCell) Value() int64 {
 
 // PUSH AND POP
 
-func push(list cell, value cell) cell {
-	return newConsCell(value, list)
+func push(list *cell, value cell) {
+	*list = newConsCell(value, *list)
 }
 
-func pop(list cell) (cell, cell) {
-	cons := list.(*consCell)
-	return cons.Cdr(), cons.Car()
+func pop(list *cell) cell {
+	cons := (*list).(*consCell)
+	value := cons.Car()
+	*list = cons.Cdr()
+	return value
+}
+
+// DUMP
+
+func dump(cell cell) string {
+	switch cell := cell.(type) {
+	case *nilCell:
+		return "()"
+	case *consCell:
+		return "(" + dump(cell.Car()) + " . " + dump(cell.Cdr()) + ")"
+	case *fixNumCell:
+		return strconv.FormatInt(cell.Value(), 10)
+	default:
+		return "<unknown>"
+	}
 }
