@@ -55,7 +55,7 @@ func run(code byteStream) cell {
 	case *consCell:
 		return returnValue.Car()
 	case *nilCell:
-		return returnValue
+		return nil
 	default:
 		panic("Unexpected cell type on stack")
 	}
