@@ -43,6 +43,40 @@ func (self *consCell) SetCdr(cdr cell) {
 	self.cdr = cdr
 }
 
+// OPCODE
+
+type opCell struct {
+	op   operation // See vm.go
+	data cell
+}
+
+func newOpCell(op operation, data cell) *opCell {
+	return &opCell{op: op, data: data}
+}
+
+func (self *opCell) Operation() operation {
+	return self.op
+}
+
+func (self *opCell) Mnemonic() string {
+	switch self.op {
+	case OP_NIL:
+		return "NIL"
+	case OP_LDC:
+		return "LDC"
+	case OP_ADD:
+		return "ADD"
+	case OP_HALT:
+		return "HALT"
+	default:
+		return "<unknown>"
+	}
+}
+
+func (self *opCell) Data() cell {
+	return self.data
+}
+
 // SYMBOL
 
 type symbolCell struct {
@@ -84,19 +118,42 @@ func pop(list *cell) cell {
 	return value
 }
 
+func pushBack(it **cell, value cell) {
+	var cdr cell = newConsCell(value, newNilCell())
+
+	switch cons := (**it).(type) {
+	case *consCell:
+		cons.SetCdr(cdr)
+		*it = &cdr
+	case *nilCell:
+		**it = cdr
+	default:
+		panic("Unexpected cell type in cons expression")
+	}
+}
+
 // DUMP
 
 func dump(cell cell) string {
+	var str string
+
 	switch cell := cell.(type) {
 	case *nilCell:
-		return "()"
+		str = "()"
 	case *consCell:
-		return "(" + dump(cell.Car()) + " . " + dump(cell.Cdr()) + ")"
+		str = "(" + dump(cell.Car()) + " . " + dump(cell.Cdr()) + ")"
+	case *opCell:
+		str = cell.Mnemonic()
+		if cell.Data() != nil {
+			str += " " + dump(cell.Data())
+		}
 	case *symbolCell:
-		return cell.Value()
+		str = cell.Value()
 	case *fixNumCell:
-		return strconv.FormatInt(cell.Value(), 10)
+		str = strconv.FormatInt(cell.Value(), 10)
 	default:
-		return "<unknown>"
+		str = "<unknown>"
 	}
+
+	return str
 }

@@ -1,68 +1,65 @@
 package main
 
 import (
-	"bytes"
 	"testing"
 )
 
 func TestOpNil(t *testing.T) {
-	code := []byte{
-		0x00, // NIL
-	}
+	code := newConsCell(
+		newOpCell(OP_NIL, nil),
+		newConsCell(
+			newOpCell(OP_HALT, nil),
+			newNilCell(),
+		),
+	)
 
-	returnValue := run(bytes.NewReader(code))
+	expected := newNilCell()
 
-	switch returnValue := returnValue.(type) {
-	case *nilCell:
-		// Nothing
-	default:
-		t.Errorf("Expected type Nil, got %s", dump(returnValue))
+	actual := run(code)
+
+	if dump(actual) != dump(expected) {
+		t.Errorf("Expected %s but got %s", dump(expected), dump(actual))
 	}
 }
 
 func TestOpLdc(t *testing.T) {
-	var intValue int64
-	var expectedValue int64 = -4822679049321438
+	code := newConsCell(
+		newOpCell(OP_LDC, newFixNumCell(-52)),
+		newConsCell(
+			newOpCell(OP_HALT, nil),
+			newNilCell(),
+		),
+	)
 
-	code := []byte{
-		0x01, 0xFF, 0xEE, 0xDD, 0xCC, 0x88, 0x66, 0x44, 0x22, // LDC
-	}
+	expected := newFixNumCell(-52)
 
-	returnValue := run(bytes.NewReader(code))
+	actual := run(code)
 
-	switch returnValue := returnValue.(type) {
-	case *fixNumCell:
-		intValue = returnValue.Value()
-
-		if intValue != expectedValue {
-			t.Errorf("Expected %d, got %d", expectedValue, intValue)
-		}
-
-	default:
-		t.Errorf("Expected type FixNum, got %s", dump(returnValue))
+	if dump(actual) != dump(expected) {
+		t.Errorf("Expected %s but got %s", dump(expected), dump(actual))
 	}
 }
 
 func TestOpAdd(t *testing.T) {
-	var intValue int64
+	code := newConsCell(
+		newOpCell(OP_LDC, newFixNumCell(5)),
+		newConsCell(
+			newOpCell(OP_LDC, newFixNumCell(6)),
+			newConsCell(
+				newOpCell(OP_ADD, nil),
+				newConsCell(
+					newOpCell(OP_HALT, nil),
+					newNilCell(),
+				),
+			),
+		),
+	)
 
-	code := []byte{
-		0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, // LDC 5
-		0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06, // LDC 6
-		0x02, // ADD
-	}
+	expected := newFixNumCell(11)
 
-	returnValue := run(bytes.NewReader(code))
+	actual := run(code)
 
-	switch returnValue := returnValue.(type) {
-	case *fixNumCell:
-		intValue = returnValue.Value()
-
-		if intValue != 11 {
-			t.Errorf("Expected 11, got %d", intValue)
-		}
-
-	default:
-		t.Errorf("Expected type FixNum, got %s", dump(returnValue))
+	if dump(actual) != dump(expected) {
+		t.Errorf("Expected %s but got %s", dump(expected), dump(actual))
 	}
 }

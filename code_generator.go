@@ -1,35 +1,22 @@
 package main
 
-import (
-	"bytes"
-	"encoding/binary"
-)
-
-func generateCode(ast cell) *bytes.Reader {
-	var buf bytes.Buffer
+func generateCode(ast cell) cell {
+	var code cell = newNilCell()
+	var it *cell = &code
 	var expandExpression, expandFunctionCall func(cell)
 
-	putOp := func(op operation) {
-		if err := buf.WriteByte(byte(op)); err != nil {
-			panic(err)
-		}
-	}
-
-	putData := func(value interface{}) {
-		if err := binary.Write(&buf, binary.BigEndian, value); err != nil {
-			panic(err)
-		}
+	write := func(op operation, data cell) {
+		pushBack(&it, newOpCell(op, data))
 	}
 
 	expandExpression = func(node cell) {
 		switch node := node.(type) {
 		case *nilCell:
-			putOp(OP_NIL)
+			write(OP_NIL, nil)
 		case *consCell:
 			expandFunctionCall(node)
 		case *fixNumCell:
-			putOp(OP_LDC)
-			putData(node.Value())
+			write(OP_LDC, newFixNumCell(node.Value()))
 		default:
 			panic("Unexpected node type in expression")
 		}
@@ -60,10 +47,12 @@ func generateCode(ast cell) *bytes.Reader {
 			expandExpression(args[i])
 		}
 
-		putOp(OP_ADD)
+		write(OP_ADD, nil)
 	}
 
 	expandExpression(ast)
 
-	return bytes.NewReader(buf.Bytes())
+	write(OP_HALT, nil)
+
+	return code
 }

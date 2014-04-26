@@ -24,24 +24,13 @@ func parse(input string) cell {
 
 	parseCons = func() cell {
 		var cons cell = newNilCell()
-		var current *cell = &cons
+		var it *cell = &cons
 
 		for {
 			tokenizer.Next()
 
 			if tokenizer.Type() != TOK_CLOSE {
-				var newValue cell = newConsCell(parseExpression(), newNilCell())
-
-				switch cons := (*current).(type) {
-				case *consCell:
-					cons.SetCdr(newValue)
-					current = &newValue
-				case *nilCell:
-					*current = newValue
-				default:
-					panic("Unexpected cell type in cons expression")
-				}
-
+				pushBack(&it, parseExpression())
 			} else {
 				break
 			}
