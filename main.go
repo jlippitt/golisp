@@ -1,13 +1,14 @@
 package main
 
-import "bytes"
+import "log"
 
 func main() {
-	code := []byte{
-		0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06, // LDC 6
-		0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, // LDC 5
-		0x02, // ADD
-	}
+	code := "(+ 6 5)"
 
-	run(bytes.NewReader(code))
+	tokenizer := newTokenizer(code)
+
+	for tokenizer.Type() != TOK_EOF {
+		log.Printf("%02X %s\n", tokenizer.Type(), tokenizer.StringValue())
+		tokenizer.Next()
+	}
 }
