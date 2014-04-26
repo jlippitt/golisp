@@ -2,6 +2,7 @@ package main
 
 import (
 	"io"
+	"log"
 )
 
 type byteStream interface {
@@ -63,6 +64,8 @@ func run(code byteStream) cell {
 
 func opNil(vm *vm) {
 	push(&vm.S, newNilCell())
+
+	log.Print("NIL")
 }
 
 func opLdc(vm *vm) {
@@ -79,10 +82,15 @@ func opLdc(vm *vm) {
 	}
 
 	push(&vm.S, newFixNumCell(intVal))
+
+	log.Printf("LDC %d", intVal)
 }
 
 func opAdd(vm *vm) {
 	rhs := pop(&vm.S).(*fixNumCell).Value()
 	lhs := pop(&vm.S).(*fixNumCell).Value()
+
 	push(&vm.S, newFixNumCell(lhs+rhs))
+
+	log.Printf("ADD")
 }
