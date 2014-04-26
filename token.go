@@ -17,15 +17,13 @@ const (
 	TOK_FIXNUM tokenType = 5
 )
 
-type token struct {
-	Type  tokenType
-	Value string
-}
-
 type tokenizer struct {
 	input *strings.Reader
 	char  rune
-	token token
+	token struct {
+		Type  tokenType
+		Value string
+	}
 }
 
 func newTokenizer(input string) *tokenizer {
@@ -36,25 +34,27 @@ func newTokenizer(input string) *tokenizer {
 }
 
 func (self *tokenizer) Next() {
+	self.token.Value = ""
+
 	// Skip whitespace
 	for unicode.IsSpace(self.char) {
 		self.nextChar()
 	}
 
 	if self.char == '(' {
-		self.token = token{TOK_OPEN, ""}
+		self.token.Type = TOK_OPEN
 		self.nextChar()
 
 	} else if self.char == ')' {
-		self.token = token{TOK_CLOSE, ""}
+		self.token.Type = TOK_CLOSE
 		self.nextChar()
 
 	} else if self.char == '.' {
-		self.token = token{TOK_DOT, ""}
+		self.token.Type = TOK_DOT
 		self.nextChar()
 
 	} else if unicode.IsDigit(self.char) {
-		self.token = token{TOK_FIXNUM, ""}
+		self.token.Type = TOK_FIXNUM
 
 		for {
 			self.token.Value += string(self.char)
@@ -66,7 +66,7 @@ func (self *tokenizer) Next() {
 		}
 
 	} else if isValidSymbolChar(self.char) {
-		self.token = token{TOK_SYMBOL, ""}
+		self.token.Type = TOK_SYMBOL
 
 		for {
 			self.token.Value += string(self.char)
