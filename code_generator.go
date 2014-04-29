@@ -42,6 +42,8 @@ func generateCode(ast cell, st *symbolTable) cell {
 			}
 		}
 
+		write(OP_NIL, nil)
+
 		// Arguments must be pushed on to the stack in reverse order
 		for i := len(args) - 1; i >= 0; i-- {
 			expandExpression(args[i])

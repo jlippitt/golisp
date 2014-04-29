@@ -164,17 +164,9 @@ func push(list *cell, value cell) {
 
 func pop(list *cell) cell {
 	var value cell
-
-	switch cons := (*list).(type) {
-	case *consCell:
-		value = cons.Car()
-		*list = cons.Cdr()
-	case *nilCell:
-		value = *list
-	default:
-		panic("Unexpected cell type in cons expression")
-	}
-
+	cons := (*list).(*consCell)
+	value = cons.Car()
+	*list = cons.Cdr()
 	return value
 }
 
