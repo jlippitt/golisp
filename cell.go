@@ -6,6 +6,12 @@ type cellType byte
 
 type cell interface{}
 
+type list interface {
+	Current() cell
+	Next() list
+	IsNil() bool
+}
+
 // NIL
 
 type nilCell struct{}
@@ -14,6 +20,18 @@ var theNilCell nilCell = nilCell{}
 
 func newNilCell() *nilCell {
 	return &theNilCell
+}
+
+func (self *nilCell) Current() cell {
+	panic("Tried to get current value of nil")
+}
+
+func (self *nilCell) Next() list {
+	panic("Tried to get next value of nil")
+}
+
+func (self *nilCell) IsNil() bool {
+	return true
 }
 
 // CONS
@@ -43,6 +61,18 @@ func (self *consCell) SetCdr(cdr cell) {
 	self.cdr = cdr
 }
 
+func (self *consCell) Current() cell {
+	return self.car
+}
+
+func (self *consCell) Next() list {
+	return self.cdr.(list)
+}
+
+func (self *consCell) IsNil() bool {
+	return false
+}
+
 // OPCODE
 
 type opCell struct {
@@ -64,8 +94,10 @@ func (self *opCell) Mnemonic() string {
 		return "NIL"
 	case OP_LDC:
 		return "LDC"
-	case OP_ADD:
-		return "ADD"
+	case OP_CONS:
+		return "CONS"
+	case OP_AP:
+		return "AP"
 	case OP_HALT:
 		return "HALT"
 	default:
@@ -105,6 +137,25 @@ func (self *fixNumCell) Value() int64 {
 	return self.value
 }
 
+// BUILT-IN FUNCTION
+
+type functionCell struct {
+	name     string
+	function func(list) cell
+}
+
+func newFunctionCell(name string, function func(list) cell) *functionCell {
+	return &functionCell{name: name, function: function}
+}
+
+func (self *functionCell) Name() string {
+	return self.name
+}
+
+func (self *functionCell) Call(args list) cell {
+	return self.function(args)
+}
+
 // PUSH AND POP
 
 func push(list *cell, value cell) {
@@ -112,9 +163,18 @@ func push(list *cell, value cell) {
 }
 
 func pop(list *cell) cell {
-	cons := (*list).(*consCell)
-	value := cons.Car()
-	*list = cons.Cdr()
+	var value cell
+
+	switch cons := (*list).(type) {
+	case *consCell:
+		value = cons.Car()
+		*list = cons.Cdr()
+	case *nilCell:
+		value = *list
+	default:
+		panic("Unexpected cell type in cons expression")
+	}
+
 	return value
 }
 
@@ -151,6 +211,8 @@ func dump(cell cell) string {
 		str = cell.Value()
 	case *fixNumCell:
 		str = strconv.FormatInt(cell.Value(), 10)
+	case *functionCell:
+		str = "<BUILTIN:" + cell.Name() + ">"
 	default:
 		str = "<unknown>"
 	}

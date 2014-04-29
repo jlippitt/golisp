@@ -1,6 +1,6 @@
 package main
 
-func generateCode(ast cell) cell {
+func generateCode(ast cell, st *symbolTable) cell {
 	var code cell = newNilCell()
 	var it *cell = &code
 	var expandExpression, expandFunctionCall func(cell)
@@ -45,9 +45,13 @@ func generateCode(ast cell) cell {
 		// Arguments must be pushed on to the stack in reverse order
 		for i := len(args) - 1; i >= 0; i-- {
 			expandExpression(args[i])
+			write(OP_CONS, nil)
 		}
 
-		write(OP_ADD, nil)
+		functionName := node.(*consCell).Car().(*symbolCell).Value()
+
+		write(OP_LDC, st.Get(functionName))
+		write(OP_AP, nil)
 	}
 
 	expandExpression(ast)

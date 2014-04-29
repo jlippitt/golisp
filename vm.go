@@ -9,13 +9,14 @@ type operation byte
 const (
 	OP_NIL  operation = 0x00
 	OP_LDC  operation = 0x01
-	OP_ADD  operation = 0x02
-	OP_HALT operation = 0x03
+	OP_CONS operation = 0x02
+	OP_AP   operation = 0x03
+	OP_HALT operation = 0x04
 )
 
 func run(code cell) cell {
 	var op *opCell
-	var opNil, opLdc, opAdd, opHalt func()
+	var opNil, opLdc, opCons, opAp, opHalt func()
 
 	var stack cell = newNilCell()
 	//var env cell = newNilCell()
@@ -24,31 +25,39 @@ func run(code cell) cell {
 	running := true
 
 	opNil = func() {
-		push(&stack, newNilCell())
 		log.Print("NIL")
+		push(&stack, newNilCell())
 	}
 
 	opLdc = func() {
-		push(&stack, op.Data())
 		log.Printf("LDC %s", dump(op.Data()))
+		push(&stack, op.Data())
 	}
 
-	opAdd = func() {
-		rhs := pop(&stack).(*fixNumCell).Value()
-		lhs := pop(&stack).(*fixNumCell).Value()
-		push(&stack, newFixNumCell(lhs+rhs))
-		log.Printf("ADD")
+	opCons = func() {
+		log.Printf("CONS")
+		car := pop(&stack)
+		cdr := pop(&stack)
+		push(&stack, newConsCell(car, cdr))
+	}
+
+	opAp = func() {
+		log.Printf("AP")
+		function := pop(&stack).(*functionCell)
+		args := pop(&stack).(list)
+		push(&stack, function.Call(args))
 	}
 
 	opHalt = func() {
-		running = false
 		log.Printf("HALT")
+		running = false
 	}
 
 	jumpTable := []func(){
 		opNil,
 		opLdc,
-		opAdd,
+		opCons,
+		opAp,
 		opHalt,
 	}
 

@@ -11,7 +11,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	byteCode := generateCode(parse(os.Args[1]))
+	st := newSymbolTable()
+
+	byteCode := generateCode(parse(os.Args[1]), st)
 
 	result := run(byteCode)
 

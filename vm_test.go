@@ -44,12 +44,21 @@ func TestOpAdd(t *testing.T) {
 	code := newConsCell(
 		newOpCell(OP_LDC, newFixNumCell(5)),
 		newConsCell(
-			newOpCell(OP_LDC, newFixNumCell(6)),
+			newOpCell(OP_CONS, nil),
 			newConsCell(
-				newOpCell(OP_ADD, nil),
+				newOpCell(OP_LDC, newFixNumCell(6)),
 				newConsCell(
-					newOpCell(OP_HALT, nil),
-					newNilCell(),
+					newOpCell(OP_CONS, nil),
+					newConsCell(
+						newOpCell(OP_LDC, newSymbolTable().Get("+")),
+						newConsCell(
+							newOpCell(OP_AP, nil),
+							newConsCell(
+								newOpCell(OP_HALT, nil),
+								newNilCell(),
+							),
+						),
+					),
 				),
 			),
 		),
