@@ -17,5 +17,5 @@ func main() {
 
 	result := run(byteCode)
 
-	fmt.Println("= " + dump(result))
+	fmt.Printf("= %s\n", result)
 }

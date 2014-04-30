@@ -1,10 +1,15 @@
 package main
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
 type cellType byte
 
-type cell interface{}
+type cell interface {
+	fmt.Stringer
+}
 
 type list interface {
 	Current() cell
@@ -32,6 +37,10 @@ func (self *nilCell) Next() list {
 
 func (self *nilCell) IsNil() bool {
 	return true
+}
+
+func (self *nilCell) String() string {
+	return "()"
 }
 
 // CONS
@@ -73,6 +82,10 @@ func (self *consCell) IsNil() bool {
 	return false
 }
 
+func (self *consCell) String() string {
+	return "(" + self.car.String() + " . " + self.cdr.String() + ")"
+}
+
 // OPCODE
 
 type opCell struct {
@@ -88,25 +101,33 @@ func (self *opCell) Operation() operation {
 	return self.op
 }
 
-func (self *opCell) Mnemonic() string {
-	switch self.op {
-	case OP_NIL:
-		return "NIL"
-	case OP_LDC:
-		return "LDC"
-	case OP_CONS:
-		return "CONS"
-	case OP_AP:
-		return "AP"
-	case OP_HALT:
-		return "HALT"
-	default:
-		return "<unknown>"
-	}
-}
-
 func (self *opCell) Data() cell {
 	return self.data
+}
+
+func (self *opCell) String() string {
+	var output string
+
+	switch self.op {
+	case OP_NIL:
+		output = "NIL"
+	case OP_LDC:
+		output = "LDC"
+	case OP_CONS:
+		output = "CONS"
+	case OP_AP:
+		output = "AP"
+	case OP_HALT:
+		output = "HALT"
+	default:
+		panic("Unknown opcode")
+	}
+
+	if self.data != nil {
+		output += " " + self.data.String()
+	}
+
+	return output
 }
 
 // SYMBOL
@@ -123,6 +144,10 @@ func (self *symbolCell) Value() string {
 	return self.value
 }
 
+func (self *symbolCell) String() string {
+	return self.value
+}
+
 // FIXNUM
 
 type fixNumCell struct {
@@ -135,6 +160,10 @@ func newFixNumCell(value int64) *fixNumCell {
 
 func (self *fixNumCell) Value() int64 {
 	return self.value
+}
+
+func (self *fixNumCell) String() string {
+	return strconv.FormatInt(self.value, 10)
 }
 
 // BUILT-IN FUNCTION
@@ -154,6 +183,10 @@ func (self *functionCell) Name() string {
 
 func (self *functionCell) Call(args list) cell {
 	return self.function(args)
+}
+
+func (self *functionCell) String() string {
+	return "<BUILTIN:" + self.name + ">"
 }
 
 // PUSH AND POP
@@ -182,32 +215,4 @@ func pushBack(it **cell, value cell) {
 	default:
 		panic("Unexpected cell type in cons expression")
 	}
-}
-
-// DUMP
-
-func dump(cell cell) string {
-	var str string
-
-	switch cell := cell.(type) {
-	case *nilCell:
-		str = "()"
-	case *consCell:
-		str = "(" + dump(cell.Car()) + " . " + dump(cell.Cdr()) + ")"
-	case *opCell:
-		str = cell.Mnemonic()
-		if cell.Data() != nil {
-			str += " " + dump(cell.Data())
-		}
-	case *symbolCell:
-		str = cell.Value()
-	case *fixNumCell:
-		str = strconv.FormatInt(cell.Value(), 10)
-	case *functionCell:
-		str = "<BUILTIN:" + cell.Name() + ">"
-	default:
-		str = "<unknown>"
-	}
-
-	return str
 }

@@ -44,7 +44,7 @@ func TestCodeGeneration(t *testing.T) {
 
 	actual := generateCode(ast, st)
 
-	if dump(actual) != dump(expected) {
-		t.Errorf("Expected %s but got %s", dump(expected), dump(actual))
+	if actual.String() != expected.String() {
+		t.Errorf("Expected %s but got %s", expected, actual)
 	}
 }

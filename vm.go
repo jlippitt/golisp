@@ -30,7 +30,7 @@ func run(code cell) cell {
 	}
 
 	opLdc = func() {
-		log.Printf("LDC %s", dump(op.Data()))
+		log.Printf("LDC %s", op.Data())
 		push(&stack, op.Data())
 	}
 
