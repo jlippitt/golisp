@@ -173,6 +173,10 @@ func (self *opCell) String() string {
 		output = "CONS"
 	case OP_AP:
 		output = "AP"
+	case OP_SEL:
+		output = "SEL"
+	case OP_JOIN:
+		output = "JOIN"
 	case OP_HALT:
 		output = "HALT"
 	default:
