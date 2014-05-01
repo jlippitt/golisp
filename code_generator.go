@@ -70,6 +70,8 @@ Loop:
 
 		if len(args) > 2 {
 			rhs.ExpandExpression(args[2])
+		} else {
+			rhs.Write(OP_NIL, nil)
 		}
 
 		rhs.Write(OP_JOIN, nil)
