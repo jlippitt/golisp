@@ -7,20 +7,22 @@ import (
 type operation byte
 
 const (
-	OP_NIL  operation = 0x00
-	OP_LDC  operation = 0x01
-	OP_CONS operation = 0x02
-	OP_AP   operation = 0x03
-	OP_HALT operation = 0x04
+	OP_NIL operation = iota
+	OP_LDC
+	OP_CONS
+	OP_AP
+	OP_SEL
+	OP_JOIN
+	OP_HALT
 )
 
 func run(code cell) cell {
 	var op *opCell
-	var opNil, opLdc, opCons, opAp, opHalt func()
+	var opNil, opLdc, opCons, opAp, opSel, opJoin, opHalt func()
 
 	var stack cell = newNilCell()
 	//var env cell = newNilCell()
-	//var dump cell = newNilCell()
+	var dump cell = newNilCell()
 
 	running := true
 
@@ -48,6 +50,26 @@ func run(code cell) cell {
 		push(&stack, function.Call(args))
 	}
 
+	opSel = func() {
+		log.Printf("SEL %s", op.Data())
+
+		data := op.Data().(*consCell)
+
+		push(&dump, code)
+
+		switch pop(&stack).(type) {
+		case *nilCell:
+			code = data.Cdr()
+		default:
+			code = data.Car()
+		}
+	}
+
+	opJoin = func() {
+		log.Printf("JOIN")
+		code = pop(&dump)
+	}
+
 	opHalt = func() {
 		log.Printf("HALT")
 		running = false
@@ -58,6 +80,8 @@ func run(code cell) cell {
 		opLdc,
 		opCons,
 		opAp,
+		opSel,
+		opJoin,
 		opHalt,
 	}
 
