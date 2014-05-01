@@ -39,6 +39,17 @@ func newSymbolTable() *symbolTable {
 		})
 	})
 
+	self["="] = newFunctionCell("=", func(args list) cell {
+		lhs := args.Current()
+		rhs := args.Next().Current()
+
+		if lhs.Equal(rhs) {
+			return newTrueCell()
+		} else {
+			return newNilCell()
+		}
+	})
+
 	return &self
 }
 

@@ -22,6 +22,8 @@ func TestFunctionCall(t *testing.T) {
 }
 
 func TestIfCondition(t *testing.T) {
-	checkResult(t, "(if 1 2 3)", newFixNumCell(2))
-	checkResult(t, "(if () 2 3)", newFixNumCell(3))
+	checkResult(t, "(if (= 10 10) 1 2)", newFixNumCell(1))
+	checkResult(t, "(if (= 10 11) 1 2)", newFixNumCell(2))
+	checkResult(t, "(if (= 10 10) (* 2 2) 2)", newFixNumCell(4))
+	checkResult(t, "(if (= 10 11) 1 (* 4 4))", newFixNumCell(16))
 }

@@ -53,6 +53,29 @@ func (self *nilCell) String() string {
 	return "()"
 }
 
+// TRUE
+
+type trueCell struct{}
+
+var theTrueCell trueCell = trueCell{}
+
+func newTrueCell() *trueCell {
+	return &theTrueCell
+}
+
+func (self *trueCell) Equal(other cell) bool {
+	switch other.(type) {
+	case *trueCell:
+		return true
+	default:
+		return false
+	}
+}
+
+func (self *trueCell) String() string {
+	return "T"
+}
+
 // CONS
 
 type consCell struct {
