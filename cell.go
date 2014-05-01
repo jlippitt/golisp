@@ -9,6 +9,7 @@ type cellType byte
 
 type cell interface {
 	fmt.Stringer
+	Equal(cell) bool
 }
 
 type list interface {
@@ -37,6 +38,15 @@ func (self *nilCell) Next() list {
 
 func (self *nilCell) IsNil() bool {
 	return true
+}
+
+func (self *nilCell) Equal(other cell) bool {
+	switch other.(type) {
+	case *nilCell:
+		return true
+	default:
+		return false
+	}
 }
 
 func (self *nilCell) String() string {
@@ -82,6 +92,15 @@ func (self *consCell) IsNil() bool {
 	return false
 }
 
+func (self *consCell) Equal(other cell) bool {
+	switch other := other.(type) {
+	case *consCell:
+		return self.car.Equal(other.Car()) && self.cdr.Equal(other.Cdr())
+	default:
+		return false
+	}
+}
+
 func (self *consCell) String() string {
 	return "(" + self.car.String() + " . " + self.cdr.String() + ")"
 }
@@ -103,6 +122,20 @@ func (self *opCell) Operation() operation {
 
 func (self *opCell) Data() cell {
 	return self.data
+}
+
+func (self *opCell) Equal(other cell) bool {
+	switch other := other.(type) {
+	case *opCell:
+		if self.op == other.Operation() {
+			return (self.data == nil && other.Data() == nil) ||
+				self.data.Equal(other.Data())
+		} else {
+			return false
+		}
+	default:
+		return false
+	}
 }
 
 func (self *opCell) String() string {
@@ -144,6 +177,15 @@ func (self *symbolCell) Value() string {
 	return self.value
 }
 
+func (self *symbolCell) Equal(other cell) bool {
+	switch other := other.(type) {
+	case *symbolCell:
+		return self.value == other.Value()
+	default:
+		return false
+	}
+}
+
 func (self *symbolCell) String() string {
 	return self.value
 }
@@ -160,6 +202,15 @@ func newFixNumCell(value int64) *fixNumCell {
 
 func (self *fixNumCell) Value() int64 {
 	return self.value
+}
+
+func (self *fixNumCell) Equal(other cell) bool {
+	switch other := other.(type) {
+	case *fixNumCell:
+		return self.value == other.Value()
+	default:
+		return false
+	}
 }
 
 func (self *fixNumCell) String() string {
@@ -183,6 +234,15 @@ func (self *functionCell) Name() string {
 
 func (self *functionCell) Call(args list) cell {
 	return self.function(args)
+}
+
+func (self *functionCell) Equal(other cell) bool {
+	switch other := other.(type) {
+	case *functionCell:
+		return self.name == other.Name()
+	default:
+		return false
+	}
 }
 
 func (self *functionCell) String() string {

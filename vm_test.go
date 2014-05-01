@@ -17,7 +17,7 @@ func TestOpNil(t *testing.T) {
 
 	actual := run(code)
 
-	if actual.String() != expected.String() {
+	if !actual.Equal(expected) {
 		t.Errorf("Expected %s but got %s", expected, actual)
 	}
 }
@@ -35,7 +35,7 @@ func TestOpLdc(t *testing.T) {
 
 	actual := run(code)
 
-	if actual.String() != expected.String() {
+	if !actual.Equal(expected) {
 		t.Errorf("Expected %s but got %s", expected, actual)
 	}
 }
@@ -73,7 +73,7 @@ func TestOpAdd(t *testing.T) {
 
 	actual := run(code)
 
-	if actual.String() != expected.String() {
+	if !actual.Equal(expected) {
 		t.Errorf("Expected %s but got %s", expected, actual)
 	}
 }
