@@ -57,18 +57,21 @@ Loop:
 	case *symbolCell:
 		switch name := function.Value(); name {
 		case "if":
-			self.expandIf(node, args)
+			self.expandIf(args)
+			return
+		case "fn":
+			self.expandAnonymousFunction(args)
+			return
 		case "+", "-", "*", "/", "=":
-			self.expandOperator(node, name, args)
-		default:
-			// Named function call
+			self.expandOperator(name, args)
+			return
 		}
-	case *consCell:
-		self.expandFunctionCall(node, function, args)
 	}
+
+	self.expandFunctionCall(function, args)
 }
 
-func (self *codeWriter) expandIf(node cell, args []cell) {
+func (self *codeWriter) expandIf(args []cell) {
 	if len(args) > 3 {
 		panic("'if' expects no more than 3 arguments")
 	} else if len(args) < 2 {
@@ -93,7 +96,14 @@ func (self *codeWriter) expandIf(node cell, args []cell) {
 	self.Write(OP_SEL, newConsCell(lhs.Code(), rhs.Code()))
 }
 
-func (self *codeWriter) expandOperator(node cell, name string, args []cell) {
+func (self *codeWriter) expandAnonymousFunction(args []cell) {
+	body := newCodeWriter()
+	body.ExpandExpression(args[0])
+	body.Write(OP_RET, nil)
+	self.Write(OP_LDF, body.Code())
+}
+
+func (self *codeWriter) expandOperator(name string, args []cell) {
 	if len(args) < 2 {
 		panic("'" + name + "' expecets at least 2 arguments")
 	}
@@ -124,7 +134,7 @@ func (self *codeWriter) expandOperator(node cell, name string, args []cell) {
 	}
 }
 
-func (self *codeWriter) expandFunctionCall(node cell, function *consCell, args []cell) {
+func (self *codeWriter) expandFunctionCall(function cell, args []cell) {
 	// Push arguments to the stack in reverse order
 	self.Write(OP_NIL, nil)
 
@@ -133,11 +143,7 @@ func (self *codeWriter) expandFunctionCall(node cell, function *consCell, args [
 		self.Write(OP_CONS, nil)
 	}
 
-	functionCode := newCodeWriter()
-	functionCode.ExpandExpression(function)
-	functionCode.Write(OP_RET, nil)
-
-	self.Write(OP_LDF, functionCode.Code())
+	self.ExpandExpression(function)
 	self.Write(OP_AP, nil)
 }
 
