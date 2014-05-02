@@ -24,6 +24,6 @@ func Execute(code string) (result cell, err error) {
 		}
 	}()
 
-	result = run(generateCode(parse(code), newSymbolTable()))
+	result = run(generateCode(parse(code)))
 	return
 }

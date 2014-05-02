@@ -177,6 +177,16 @@ func (self *opCell) String() string {
 		output = "SEL"
 	case OP_JOIN:
 		output = "JOIN"
+	case OP_ADD:
+		output = "ADD"
+	case OP_SUB:
+		output = "SUB"
+	case OP_MUL:
+		output = "MUL"
+	case OP_DIV:
+		output = "DIV"
+	case OP_EQ:
+		output = "EQ"
 	case OP_HALT:
 		output = "HALT"
 	default:

@@ -17,7 +17,7 @@ func checkResult(t *testing.T, code string, expected cell) {
 	}
 }
 
-func TestFunctionCall(t *testing.T) {
+func TestOperators(t *testing.T) {
 	checkResult(t, "(+ 6 5)", newFixNumCell(11))
 }
 

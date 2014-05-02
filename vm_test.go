@@ -41,29 +41,15 @@ func TestOpLdc(t *testing.T) {
 }
 
 func TestOpAdd(t *testing.T) {
-	st := newSymbolTable()
-
 	code := newConsCell(
-		newOpCell(OP_NIL, nil),
+		newOpCell(OP_LDC, newFixNumCell(5)),
 		newConsCell(
-			newOpCell(OP_LDC, newFixNumCell(5)),
+			newOpCell(OP_LDC, newFixNumCell(6)),
 			newConsCell(
-				newOpCell(OP_CONS, nil),
+				newOpCell(OP_ADD, nil),
 				newConsCell(
-					newOpCell(OP_LDC, newFixNumCell(6)),
-					newConsCell(
-						newOpCell(OP_CONS, nil),
-						newConsCell(
-							newOpCell(OP_LDC, st.Get("+")),
-							newConsCell(
-								newOpCell(OP_AP, nil),
-								newConsCell(
-									newOpCell(OP_HALT, nil),
-									newNilCell(),
-								),
-							),
-						),
-					),
+					newOpCell(OP_HALT, nil),
+					newNilCell(),
 				),
 			),
 		),

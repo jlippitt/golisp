@@ -13,12 +13,16 @@ const (
 	OP_AP
 	OP_SEL
 	OP_JOIN
+	OP_ADD
+	OP_SUB
+	OP_MUL
+	OP_DIV
+	OP_EQ
 	OP_HALT
 )
 
 func run(code cell) cell {
 	var op *opCell
-	var opNil, opLdc, opCons, opAp, opSel, opJoin, opHalt func()
 
 	var stack cell = newNilCell()
 	//var env cell = newNilCell()
@@ -26,33 +30,29 @@ func run(code cell) cell {
 
 	running := true
 
-	opNil = func() {
-		log.Print("NIL")
+	var jumpTable [OP_HALT + 1]func()
+
+	jumpTable[OP_NIL] = func() {
 		push(&stack, newNilCell())
 	}
 
-	opLdc = func() {
-		log.Printf("LDC %s", op.Data())
+	jumpTable[OP_LDC] = func() {
 		push(&stack, op.Data())
 	}
 
-	opCons = func() {
-		log.Printf("CONS")
+	jumpTable[OP_CONS] = func() {
 		car := pop(&stack)
 		cdr := pop(&stack)
 		push(&stack, newConsCell(car, cdr))
 	}
 
-	opAp = func() {
-		log.Printf("AP")
+	jumpTable[OP_AP] = func() {
 		function := pop(&stack).(*functionCell)
 		args := pop(&stack).(list)
 		push(&stack, function.Call(args))
 	}
 
-	opSel = func() {
-		log.Printf("SEL %s", op.Data())
-
+	jumpTable[OP_SEL] = func() {
 		data := op.Data().(*consCell)
 
 		push(&dump, code)
@@ -65,28 +65,52 @@ func run(code cell) cell {
 		}
 	}
 
-	opJoin = func() {
-		log.Printf("JOIN")
+	jumpTable[OP_JOIN] = func() {
 		code = pop(&dump)
 	}
 
-	opHalt = func() {
-		log.Printf("HALT")
-		running = false
+	jumpTable[OP_ADD] = func() {
+		lhs := pop(&stack).(*fixNumCell).Value()
+		rhs := pop(&stack).(*fixNumCell).Value()
+		push(&stack, newFixNumCell(lhs+rhs))
 	}
 
-	jumpTable := []func(){
-		opNil,
-		opLdc,
-		opCons,
-		opAp,
-		opSel,
-		opJoin,
-		opHalt,
+	jumpTable[OP_SUB] = func() {
+		lhs := pop(&stack).(*fixNumCell).Value()
+		rhs := pop(&stack).(*fixNumCell).Value()
+		push(&stack, newFixNumCell(lhs-rhs))
+	}
+
+	jumpTable[OP_MUL] = func() {
+		lhs := pop(&stack).(*fixNumCell).Value()
+		rhs := pop(&stack).(*fixNumCell).Value()
+		push(&stack, newFixNumCell(lhs*rhs))
+	}
+
+	jumpTable[OP_DIV] = func() {
+		lhs := pop(&stack).(*fixNumCell).Value()
+		rhs := pop(&stack).(*fixNumCell).Value()
+		push(&stack, newFixNumCell(lhs/rhs))
+	}
+
+	jumpTable[OP_EQ] = func() {
+		lhs := pop(&stack).(*fixNumCell).Value()
+		rhs := pop(&stack).(*fixNumCell).Value()
+
+		if lhs == rhs {
+			push(&stack, newTrueCell())
+		} else {
+			push(&stack, newNilCell())
+		}
+	}
+
+	jumpTable[OP_HALT] = func() {
+		running = false
 	}
 
 	for running {
 		op = pop(&code).(*opCell)
+		log.Print(op)
 		jumpTable[op.Operation()]()
 	}
 
