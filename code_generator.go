@@ -51,27 +51,20 @@ Loop:
 		}
 	}
 
-	functionName := node.(*consCell).Car().(*symbolCell).Value()
+	function := node.(*consCell).Car()
 
-	switch functionName {
-	case "if":
-		self.expandIf(node, args)
-	case "+", "-", "*", "/", "=":
-		self.expandOperator(node, functionName, args)
-	default:
-		// TODO: Ordinary function call
-		/*
-			        self.Write(OP_NIL, nil)
-
-					  // Arguments must be pushed on to the stack in reverse order
-					  for i := len(args) - 1; i >= 0; i-- {
-					      self.ExpandExpression(args[i])
-					      self.Write(OP_CONS, nil)
-					  }
-
-					  self.Write(OP_LDC, self.st.Get(functionName))
-					  self.Write(OP_AP, nil)
-		*/
+	switch function := function.(type) {
+	case *symbolCell:
+		switch name := function.Value(); name {
+		case "if":
+			self.expandIf(node, args)
+		case "+", "-", "*", "/", "=":
+			self.expandOperator(node, name, args)
+		default:
+			// Named function call
+		}
+	case *consCell:
+		self.expandFunctionCall(node, function, args)
 	}
 }
 
@@ -129,6 +122,23 @@ func (self *codeWriter) expandOperator(node cell, name string, args []cell) {
 	for i := 0; i < len(args)-1; i++ {
 		self.Write(op, nil)
 	}
+}
+
+func (self *codeWriter) expandFunctionCall(node cell, function *consCell, args []cell) {
+	// Push arguments to the stack in reverse order
+	self.Write(OP_NIL, nil)
+
+	for i := len(args) - 1; i >= 0; i-- {
+		self.ExpandExpression(args[i])
+		self.Write(OP_CONS, nil)
+	}
+
+	functionCode := newCodeWriter()
+	functionCode.ExpandExpression(function)
+	functionCode.Write(OP_RET, nil)
+
+	self.Write(OP_LDF, functionCode.Code())
+	self.Write(OP_AP, nil)
 }
 
 func generateCode(ast cell) cell {

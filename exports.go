@@ -9,7 +9,8 @@ func (self Error) Error() string {
 
 // TODO: 'cell' to be made public (i.e. 'Cell')?
 func Execute(code string) (result cell, err error) {
-	defer func() {
+	// TODO: Uncomment when we have better error handling
+	/*defer func() {
 		recoveredError := recover()
 
 		if recoveredError != nil {
@@ -22,7 +23,7 @@ func Execute(code string) (result cell, err error) {
 				err = Error("Unknown error")
 			}
 		}
-	}()
+	}()*/
 
 	result = run(generateCode(parse(code)))
 	return

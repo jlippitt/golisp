@@ -169,10 +169,14 @@ func (self *opCell) String() string {
 		output = "NIL"
 	case OP_LDC:
 		output = "LDC"
+	case OP_LDF:
+		output = "LDF"
 	case OP_CONS:
 		output = "CONS"
 	case OP_AP:
 		output = "AP"
+	case OP_RET:
+		output = "RET"
 	case OP_SEL:
 		output = "SEL"
 	case OP_JOIN:

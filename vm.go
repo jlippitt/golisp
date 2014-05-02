@@ -9,8 +9,10 @@ type operation byte
 const (
 	OP_NIL operation = iota
 	OP_LDC
+	OP_LDF
 	OP_CONS
 	OP_AP
+	OP_RET
 	OP_SEL
 	OP_JOIN
 	OP_ADD
@@ -25,7 +27,7 @@ func run(code cell) cell {
 	var op *opCell
 
 	var stack cell = newNilCell()
-	//var env cell = newNilCell()
+	var env cell = newNilCell()
 	var dump cell = newNilCell()
 
 	running := true
@@ -40,6 +42,10 @@ func run(code cell) cell {
 		push(&stack, op.Data())
 	}
 
+	jumpTable[OP_LDF] = func() {
+		push(&stack, newConsCell(op.Data(), env))
+	}
+
 	jumpTable[OP_CONS] = func() {
 		car := pop(&stack)
 		cdr := pop(&stack)
@@ -47,9 +53,31 @@ func run(code cell) cell {
 	}
 
 	jumpTable[OP_AP] = func() {
-		function := pop(&stack).(*functionCell)
-		args := pop(&stack).(list)
-		push(&stack, function.Call(args))
+		function := pop(&stack).(*consCell)
+		args := pop(&stack)
+
+		// Save the old environment to the dump
+		push(&dump, stack)
+		push(&dump, env)
+		push(&dump, code)
+
+		// New environment
+		stack = nil
+		code = function.Car()
+		env = function.Cdr()
+
+		push(&env, args)
+	}
+
+	jumpTable[OP_RET] = func() {
+		returnValue := pop(&stack)
+
+		// Restore old environment
+		code = pop(&dump)
+		env = pop(&dump)
+		stack = pop(&dump)
+
+		push(&stack, returnValue)
 	}
 
 	jumpTable[OP_SEL] = func() {
@@ -94,10 +122,10 @@ func run(code cell) cell {
 	}
 
 	jumpTable[OP_EQ] = func() {
-		lhs := pop(&stack).(*fixNumCell).Value()
-		rhs := pop(&stack).(*fixNumCell).Value()
+		lhs := pop(&stack)
+		rhs := pop(&stack)
 
-		if lhs == rhs {
+		if lhs.Equal(rhs) {
 			push(&stack, newTrueCell())
 		} else {
 			push(&stack, newNilCell())
