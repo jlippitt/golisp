@@ -218,6 +218,8 @@ func (self *opCell) String() string {
 		output = "CAR"
 	case opCdr:
 		output = "CDR"
+	case opAtom:
+		output = "ATOM"
 	case opAdd:
 		output = "ADD"
 	case opSub:

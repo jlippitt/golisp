@@ -57,7 +57,7 @@ func (self *codeWriter) expandForm(node *consCell) {
 		case "cons":
 			self.expandCons(args)
 			return
-		case "car", "cdr", "+", "-", "*", "/", "=":
+		case "car", "cdr", "atom", "+", "-", "*", "/", "=":
 			self.expandOperator(name, args)
 			return
 		}
@@ -125,12 +125,13 @@ func (self *codeWriter) expandOperator(name string, args []cell) {
 	switch name {
 	case "car":
 		op = opCar
-		minArgs = 1
-		maxArgs = 1
+		minArgs, maxArgs = 1, 1
 	case "cdr":
 		op = opCdr
-		minArgs = 1
-		maxArgs = 1
+		minArgs, maxArgs = 1, 1
+	case "atom":
+		op = opAtom
+		minArgs, maxArgs = 1, 1
 	case "+":
 		op = opAdd
 		minArgs = 2

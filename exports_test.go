@@ -33,6 +33,10 @@ func TestOperators(t *testing.T) {
 	checkResult(t, "(car (cons 1 2))", newFixNumCell(1))
 	checkResult(t, "(cdr (cons 1 2))", newConsCell(newFixNumCell(2), newNilCell()))
 
+	checkResult(t, "(atom 5)", newTrueCell())
+	checkResult(t, "(atom ())", newNilCell())
+	checkResult(t, "(atom (cons 1 2))", newNilCell())
+
 	// Arithmetic
 	checkResult(t, "(+ 6 5)", newFixNumCell(11))
 	checkResult(t, "(- 6 5)", newFixNumCell(1))

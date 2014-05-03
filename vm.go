@@ -18,6 +18,7 @@ const (
 	opCons
 	opCar
 	opCdr
+	opAtom
 	opAdd
 	opSub
 	opMul
@@ -113,6 +114,15 @@ func run(code cell) cell {
 
 	jumpTable[opCdr] = func() {
 		push(&stack, pop(&stack).(*consCell).Cdr())
+	}
+
+	jumpTable[opAtom] = func() {
+		switch pop(&stack).(type) {
+		case list:
+			push(&stack, newNilCell())
+		default:
+			push(&stack, newTrueCell())
+		}
 	}
 
 	jumpTable[opAdd] = func() {
