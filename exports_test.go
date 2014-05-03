@@ -37,5 +37,6 @@ func TestIfCondition(t *testing.T) {
 }
 
 func TestFunctionApplication(t *testing.T) {
+	checkResult(t, "((fn () (+ 6 5)))", newFixNumCell(11))
 	checkResult(t, "((fn (a b) (+ a b)) 6 5)", newFixNumCell(11))
 }

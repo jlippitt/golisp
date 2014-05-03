@@ -91,7 +91,7 @@ func (self *codeWriter) expandAnonymousFunction(args []cell) {
 
 	self.st.UpLevel()
 
-	for _, param := range args[0].(*consCell).Slice() {
+	for _, param := range args[0].(list).Slice() {
 		self.st.Register(param.(*symbolCell).Value())
 	}
 
