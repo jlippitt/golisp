@@ -291,38 +291,6 @@ func (self *fixNumCell) String() string {
 	return strconv.FormatInt(self.value, 10)
 }
 
-// BUILT-IN FUNCTION
-
-type functionCell struct {
-	name     string
-	function func(list) cell
-}
-
-func newFunctionCell(name string, function func(list) cell) *functionCell {
-	return &functionCell{name: name, function: function}
-}
-
-func (self *functionCell) Name() string {
-	return self.name
-}
-
-func (self *functionCell) Call(args list) cell {
-	return self.function(args)
-}
-
-func (self *functionCell) Equal(other cell) bool {
-	switch other := other.(type) {
-	case *functionCell:
-		return self.name == other.Name()
-	default:
-		return false
-	}
-}
-
-func (self *functionCell) String() string {
-	return "<BUILTIN:" + self.name + ">"
-}
-
 // PUSH AND POP
 
 func push(list *cell, value cell) {
