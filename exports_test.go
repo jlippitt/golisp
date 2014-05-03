@@ -43,6 +43,9 @@ func TestOperators(t *testing.T) {
 	// Equality
 	checkResult(t, "(= 5 5)", newTrueCell())
 	checkResult(t, "(= 5 6)", newNilCell())
+	checkResult(t, "(= (cons 1 2) (cons 1 2))", newTrueCell())
+	checkResult(t, "(= () ())", newTrueCell())
+	checkResult(t, "(= (cons 1 2) ())", newNilCell())
 }
 
 func TestIfCondition(t *testing.T) {
