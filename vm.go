@@ -7,21 +7,21 @@ import (
 type operation byte
 
 const (
-	OP_NIL operation = iota
-	OP_LDC
-	OP_LDF
-	OP_LD
-	OP_CONS
-	OP_AP
-	OP_RET
-	OP_SEL
-	OP_JOIN
-	OP_ADD
-	OP_SUB
-	OP_MUL
-	OP_DIV
-	OP_EQ
-	OP_HALT
+	opNil operation = iota
+	opLdc
+	opLdf
+	opLd
+	opCons
+	opAp
+	opRet
+	opSel
+	opJoin
+	opAdd
+	opSub
+	opMul
+	opDiv
+	opEq
+	opStop
 )
 
 func run(code cell) cell {
@@ -33,33 +33,33 @@ func run(code cell) cell {
 
 	running := true
 
-	var jumpTable [OP_HALT + 1]func()
+	var jumpTable [opStop + 1]func()
 
-	jumpTable[OP_NIL] = func() {
+	jumpTable[opNil] = func() {
 		push(&stack, newNilCell())
 	}
 
-	jumpTable[OP_LDC] = func() {
+	jumpTable[opLdc] = func() {
 		push(&stack, op.Data())
 	}
 
-	jumpTable[OP_LDF] = func() {
+	jumpTable[opLdf] = func() {
 		push(&stack, newConsCell(op.Data(), env))
 	}
 
-	jumpTable[OP_LD] = func() {
+	jumpTable[opLd] = func() {
 		depth := op.Data().(*consCell).Car().(*fixNumCell).Value()
 		position := op.Data().(*consCell).Cdr().(*fixNumCell).Value()
 		push(&stack, env.(list).At(depth).(list).At(position))
 	}
 
-	jumpTable[OP_CONS] = func() {
+	jumpTable[opCons] = func() {
 		car := pop(&stack)
 		cdr := pop(&stack)
 		push(&stack, newConsCell(car, cdr))
 	}
 
-	jumpTable[OP_AP] = func() {
+	jumpTable[opAp] = func() {
 		function := pop(&stack).(*consCell)
 		args := pop(&stack)
 
@@ -76,7 +76,7 @@ func run(code cell) cell {
 		push(&env, args)
 	}
 
-	jumpTable[OP_RET] = func() {
+	jumpTable[opRet] = func() {
 		returnValue := pop(&stack)
 
 		// Restore old environment
@@ -87,7 +87,7 @@ func run(code cell) cell {
 		push(&stack, returnValue)
 	}
 
-	jumpTable[OP_SEL] = func() {
+	jumpTable[opSel] = func() {
 		data := op.Data().(*consCell)
 
 		push(&dump, code)
@@ -100,35 +100,35 @@ func run(code cell) cell {
 		}
 	}
 
-	jumpTable[OP_JOIN] = func() {
+	jumpTable[opJoin] = func() {
 		code = pop(&dump)
 	}
 
-	jumpTable[OP_ADD] = func() {
+	jumpTable[opAdd] = func() {
 		lhs := pop(&stack).(*fixNumCell).Value()
 		rhs := pop(&stack).(*fixNumCell).Value()
 		push(&stack, newFixNumCell(lhs+rhs))
 	}
 
-	jumpTable[OP_SUB] = func() {
+	jumpTable[opSub] = func() {
 		lhs := pop(&stack).(*fixNumCell).Value()
 		rhs := pop(&stack).(*fixNumCell).Value()
 		push(&stack, newFixNumCell(lhs-rhs))
 	}
 
-	jumpTable[OP_MUL] = func() {
+	jumpTable[opMul] = func() {
 		lhs := pop(&stack).(*fixNumCell).Value()
 		rhs := pop(&stack).(*fixNumCell).Value()
 		push(&stack, newFixNumCell(lhs*rhs))
 	}
 
-	jumpTable[OP_DIV] = func() {
+	jumpTable[opDiv] = func() {
 		lhs := pop(&stack).(*fixNumCell).Value()
 		rhs := pop(&stack).(*fixNumCell).Value()
 		push(&stack, newFixNumCell(lhs/rhs))
 	}
 
-	jumpTable[OP_EQ] = func() {
+	jumpTable[opEq] = func() {
 		lhs := pop(&stack)
 		rhs := pop(&stack)
 
@@ -139,7 +139,7 @@ func run(code cell) cell {
 		}
 	}
 
-	jumpTable[OP_HALT] = func() {
+	jumpTable[opStop] = func() {
 		running = false
 	}
 

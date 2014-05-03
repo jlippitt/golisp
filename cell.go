@@ -196,36 +196,36 @@ func (self *opCell) String() string {
 	var output string
 
 	switch self.op {
-	case OP_NIL:
+	case opNil:
 		output = "NIL"
-	case OP_LDC:
+	case opLdc:
 		output = "LDC"
-	case OP_LDF:
+	case opLdf:
 		output = "LDF"
-	case OP_LD:
+	case opLd:
 		output = "LD"
-	case OP_CONS:
+	case opCons:
 		output = "CONS"
-	case OP_AP:
+	case opAp:
 		output = "AP"
-	case OP_RET:
+	case opRet:
 		output = "RET"
-	case OP_SEL:
+	case opSel:
 		output = "SEL"
-	case OP_JOIN:
+	case opJoin:
 		output = "JOIN"
-	case OP_ADD:
+	case opAdd:
 		output = "ADD"
-	case OP_SUB:
+	case opSub:
 		output = "SUB"
-	case OP_MUL:
+	case opMul:
 		output = "MUL"
-	case OP_DIV:
+	case opDiv:
 		output = "DIV"
-	case OP_EQ:
+	case opEq:
 		output = "EQ"
-	case OP_HALT:
-		output = "HALT"
+	case opStop:
+		output = "STOP"
 	default:
 		panic("Unknown opcode")
 	}

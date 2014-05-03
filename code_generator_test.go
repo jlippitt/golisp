@@ -15,13 +15,13 @@ func TestCodeGeneration(t *testing.T) {
 	)
 
 	expected := newConsCell(
-		newOpCell(OP_LDC, newFixNumCell(5)),
+		newOpCell(opLdc, newFixNumCell(5)),
 		newConsCell(
-			newOpCell(OP_LDC, newFixNumCell(6)),
+			newOpCell(opLdc, newFixNumCell(6)),
 			newConsCell(
-				newOpCell(OP_ADD, nil),
+				newOpCell(opAdd, nil),
 				newConsCell(
-					newOpCell(OP_HALT, nil),
+					newOpCell(opStop, nil),
 					newNilCell(),
 				),
 			),

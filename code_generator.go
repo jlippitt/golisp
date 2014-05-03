@@ -23,14 +23,14 @@ func (self *codeWriter) Code() cell {
 func (self *codeWriter) ExpandExpression(node cell) {
 	switch node := node.(type) {
 	case *nilCell:
-		self.Write(OP_NIL, nil)
+		self.Write(opNil, nil)
 	case *consCell:
 		self.expandForm(node)
 	case *fixNumCell:
-		self.Write(OP_LDC, newFixNumCell(node.Value()))
+		self.Write(opLdc, newFixNumCell(node.Value()))
 	case *symbolCell:
 		location := self.st.Locate(node.Value())
-		self.Write(OP_LD, newConsCell(
+		self.Write(opLd, newConsCell(
 			newFixNumCell(location.Depth),
 			newFixNumCell(location.Position),
 		))
@@ -73,17 +73,17 @@ func (self *codeWriter) expandIf(args []cell) {
 	self.ExpandExpression(args[0])
 
 	lhs.ExpandExpression(args[1])
-	lhs.Write(OP_JOIN, nil)
+	lhs.Write(opJoin, nil)
 
 	if len(args) > 2 {
 		rhs.ExpandExpression(args[2])
 	} else {
-		rhs.Write(OP_NIL, nil)
+		rhs.Write(opNil, nil)
 	}
 
-	rhs.Write(OP_JOIN, nil)
+	rhs.Write(opJoin, nil)
 
-	self.Write(OP_SEL, newConsCell(lhs.Code(), rhs.Code()))
+	self.Write(opSel, newConsCell(lhs.Code(), rhs.Code()))
 }
 
 func (self *codeWriter) expandAnonymousFunction(args []cell) {
@@ -99,8 +99,8 @@ func (self *codeWriter) expandAnonymousFunction(args []cell) {
 
 	self.st.DownLevel()
 
-	body.Write(OP_RET, nil)
-	self.Write(OP_LDF, body.Code())
+	body.Write(opRet, nil)
+	self.Write(opLdf, body.Code())
 }
 
 func (self *codeWriter) expandOperator(name string, args []cell) {
@@ -112,15 +112,15 @@ func (self *codeWriter) expandOperator(name string, args []cell) {
 
 	switch name {
 	case "+":
-		op = OP_ADD
+		op = opAdd
 	case "-":
-		op = OP_SUB
+		op = opSub
 	case "*":
-		op = OP_MUL
+		op = opMul
 	case "/":
-		op = OP_DIV
+		op = opDiv
 	case "=":
-		op = OP_EQ
+		op = opEq
 	}
 
 	// Push arguments to the stack in reverse order
@@ -136,20 +136,20 @@ func (self *codeWriter) expandOperator(name string, args []cell) {
 
 func (self *codeWriter) expandFunctionCall(function cell, args []cell) {
 	// Push arguments to the stack in reverse order
-	self.Write(OP_NIL, nil)
+	self.Write(opNil, nil)
 
 	for i := len(args) - 1; i >= 0; i-- {
 		self.ExpandExpression(args[i])
-		self.Write(OP_CONS, nil)
+		self.Write(opCons, nil)
 	}
 
 	self.ExpandExpression(function)
-	self.Write(OP_AP, nil)
+	self.Write(opAp, nil)
 }
 
 func generateCode(ast cell) cell {
 	code := newCodeWriter(newSymbolTable())
 	code.ExpandExpression(ast)
-	code.Write(OP_HALT, nil)
+	code.Write(opStop, nil)
 	return code.Code()
 }

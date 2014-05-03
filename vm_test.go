@@ -6,9 +6,9 @@ import (
 
 func TestOpNil(t *testing.T) {
 	code := newConsCell(
-		newOpCell(OP_NIL, nil),
+		newOpCell(opNil, nil),
 		newConsCell(
-			newOpCell(OP_HALT, nil),
+			newOpCell(opStop, nil),
 			newNilCell(),
 		),
 	)
@@ -24,9 +24,9 @@ func TestOpNil(t *testing.T) {
 
 func TestOpLdc(t *testing.T) {
 	code := newConsCell(
-		newOpCell(OP_LDC, newFixNumCell(-52)),
+		newOpCell(opLdc, newFixNumCell(-52)),
 		newConsCell(
-			newOpCell(OP_HALT, nil),
+			newOpCell(opStop, nil),
 			newNilCell(),
 		),
 	)
@@ -42,13 +42,13 @@ func TestOpLdc(t *testing.T) {
 
 func TestOpAdd(t *testing.T) {
 	code := newConsCell(
-		newOpCell(OP_LDC, newFixNumCell(5)),
+		newOpCell(opLdc, newFixNumCell(5)),
 		newConsCell(
-			newOpCell(OP_LDC, newFixNumCell(6)),
+			newOpCell(opLdc, newFixNumCell(6)),
 			newConsCell(
-				newOpCell(OP_ADD, nil),
+				newOpCell(opAdd, nil),
 				newConsCell(
-					newOpCell(OP_HALT, nil),
+					newOpCell(opStop, nil),
 					newNilCell(),
 				),
 			),
