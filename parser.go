@@ -12,7 +12,14 @@ func parse(input string) cell {
 		case TOK_OPEN:
 			value = parseCons()
 		case TOK_SYMBOL:
-			value = newSymbolCell(tokenizer.StringValue())
+			switch symbol := tokenizer.StringValue(); symbol {
+			case "T":
+				value = newTrueCell()
+			case "nil":
+				value = newNilCell()
+			default:
+				value = newSymbolCell(symbol)
+			}
 		case TOK_FIXNUM:
 			value = newFixNumCell(tokenizer.IntValue())
 		default:

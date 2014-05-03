@@ -26,6 +26,8 @@ func (self *codeWriter) ExpandExpression(node cell) {
 	switch node := node.(type) {
 	case *nilCell:
 		self.Write(opNil, nil)
+	case *trueCell:
+		self.Write(opLdc, newTrueCell())
 	case *consCell:
 		self.expandForm(node)
 	case *fixNumCell:
