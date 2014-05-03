@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 type codeWriter struct {
 	code cell
 	it   *cell
@@ -52,7 +54,10 @@ func (self *codeWriter) expandForm(node *consCell) {
 		case "fn":
 			self.expandAnonymousFunction(args)
 			return
-		case "+", "-", "*", "/", "=":
+		case "cons":
+			self.expandCons(args)
+			return
+		case "car", "cdr", "+", "-", "*", "/", "=":
 			self.expandOperator(name, args)
 			return
 		}
@@ -103,24 +108,54 @@ func (self *codeWriter) expandAnonymousFunction(args []cell) {
 	self.Write(opLdf, body.Code())
 }
 
-func (self *codeWriter) expandOperator(name string, args []cell) {
-	if len(args) < 2 {
-		panic("'" + name + "' expecets at least 2 arguments")
-	}
+func (self *codeWriter) expandCons(args []cell) {
+	self.Write(opNil, nil)
 
+	// Push arguments to the stack in reverse order
+	for i := len(args) - 1; i >= 0; i-- {
+		self.ExpandExpression(args[i])
+		self.Write(opCons, nil)
+	}
+}
+
+func (self *codeWriter) expandOperator(name string, args []cell) {
 	var op operation
+	var minArgs, maxArgs int
 
 	switch name {
+	case "car":
+		op = opCar
+		minArgs = 1
+		maxArgs = 1
+	case "cdr":
+		op = opCdr
+		minArgs = 1
+		maxArgs = 1
 	case "+":
 		op = opAdd
+		minArgs = 2
 	case "-":
-		op = opSub
+		if len(args) > 1 {
+			op = opSub
+		} else {
+			op = opNeg
+		}
+		minArgs = 1
 	case "*":
 		op = opMul
+		minArgs = 2
 	case "/":
 		op = opDiv
+		minArgs = 2
 	case "=":
 		op = opEq
+		minArgs = 2
+	}
+
+	if minArgs != 0 && len(args) < minArgs {
+		panic(fmt.Sprintf("'%s' expects at least %d arguments", name, minArgs))
+	} else if maxArgs != 0 && len(args) > maxArgs {
+		panic(fmt.Sprintf("'%s' expects no more than %d arguments", name, maxArgs))
 	}
 
 	// Push arguments to the stack in reverse order
@@ -129,20 +164,17 @@ func (self *codeWriter) expandOperator(name string, args []cell) {
 	}
 
 	// Operator is applied from left to right
-	for i := 0; i < len(args)-1; i++ {
+	if len(args) > 1 {
+		for i := 0; i < len(args)-1; i++ {
+			self.Write(op, nil)
+		}
+	} else {
 		self.Write(op, nil)
 	}
 }
 
 func (self *codeWriter) expandFunctionCall(function cell, args []cell) {
-	// Push arguments to the stack in reverse order
-	self.Write(opNil, nil)
-
-	for i := len(args) - 1; i >= 0; i-- {
-		self.ExpandExpression(args[i])
-		self.Write(opCons, nil)
-	}
-
+	self.expandCons(args)
 	self.ExpandExpression(function)
 	self.Write(opAp, nil)
 }

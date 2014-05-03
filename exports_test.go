@@ -18,11 +18,27 @@ func checkResult(t *testing.T, code string, expected cell) {
 }
 
 func TestOperators(t *testing.T) {
+	// Lists
+	checkResult(t, "(cons 1 2 3)", newConsCell(
+		newFixNumCell(1),
+		newConsCell(
+			newFixNumCell(2),
+			newConsCell(
+				newFixNumCell(3),
+				newNilCell(),
+			),
+		),
+	))
+
+	checkResult(t, "(car (cons 1 2))", newFixNumCell(1))
+	checkResult(t, "(cdr (cons 1 2))", newConsCell(newFixNumCell(2), newNilCell()))
+
 	// Arithmetic
 	checkResult(t, "(+ 6 5)", newFixNumCell(11))
 	checkResult(t, "(- 6 5)", newFixNumCell(1))
 	checkResult(t, "(* 6 5)", newFixNumCell(30))
 	checkResult(t, "(/ 30 5)", newFixNumCell(6))
+	checkResult(t, "(- 6)", newFixNumCell(-6))
 
 	// Equality
 	checkResult(t, "(= 5 5)", newTrueCell())

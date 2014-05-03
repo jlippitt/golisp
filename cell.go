@@ -204,8 +204,6 @@ func (self *opCell) String() string {
 		output = "LDF"
 	case opLd:
 		output = "LD"
-	case opCons:
-		output = "CONS"
 	case opAp:
 		output = "AP"
 	case opRet:
@@ -214,6 +212,12 @@ func (self *opCell) String() string {
 		output = "SEL"
 	case opJoin:
 		output = "JOIN"
+	case opCons:
+		output = "CONS"
+	case opCar:
+		output = "CAR"
+	case opCdr:
+		output = "CDR"
 	case opAdd:
 		output = "ADD"
 	case opSub:
@@ -222,6 +226,8 @@ func (self *opCell) String() string {
 		output = "MUL"
 	case opDiv:
 		output = "DIV"
+	case opNeg:
+		output = "NEG"
 	case opEq:
 		output = "EQ"
 	case opStop:
