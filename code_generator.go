@@ -3,10 +3,11 @@ package main
 type codeWriter struct {
 	code cell
 	it   *cell
+	st   *symbolTable
 }
 
-func newCodeWriter() *codeWriter {
-	self := codeWriter{code: newNilCell()}
+func newCodeWriter(st *symbolTable) *codeWriter {
+	self := codeWriter{code: newNilCell(), st: st}
 	self.it = &self.code
 	return &self
 }
@@ -27,31 +28,20 @@ func (self *codeWriter) ExpandExpression(node cell) {
 		self.expandForm(node)
 	case *fixNumCell:
 		self.Write(OP_LDC, newFixNumCell(node.Value()))
+	case *symbolCell:
+		location := self.st.Locate(node.Value())
+		self.Write(OP_LD, newConsCell(
+			newFixNumCell(location.Depth),
+			newFixNumCell(location.Position),
+		))
 	default:
 		panic("Unexpected node type in expression")
 	}
 }
 
-func (self *codeWriter) expandForm(node cell) {
-	var args []cell
-
-	var current *consCell = node.(*consCell)
-
-	// Traverse the list and get all arguments to the function
-Loop:
-	for {
-		switch cdr := current.Cdr().(type) {
-		case *consCell:
-			args = append(args, cdr.Car())
-			current = cdr
-		case *nilCell:
-			break Loop
-		default:
-			panic("Unexpected node type in function call")
-		}
-	}
-
-	function := node.(*consCell).Car()
+func (self *codeWriter) expandForm(node *consCell) {
+	function := node.Car()
+	args := node.Cdr().(list).Slice()
 
 	switch function := function.(type) {
 	case *symbolCell:
@@ -78,7 +68,7 @@ func (self *codeWriter) expandIf(args []cell) {
 		panic("'if' expects at least 2 arguments")
 	}
 
-	lhs, rhs := newCodeWriter(), newCodeWriter()
+	lhs, rhs := newCodeWriter(self.st), newCodeWriter(self.st)
 
 	self.ExpandExpression(args[0])
 
@@ -97,8 +87,18 @@ func (self *codeWriter) expandIf(args []cell) {
 }
 
 func (self *codeWriter) expandAnonymousFunction(args []cell) {
-	body := newCodeWriter()
-	body.ExpandExpression(args[0])
+	body := newCodeWriter(self.st)
+
+	self.st.UpLevel()
+
+	for _, param := range args[0].(*consCell).Slice() {
+		self.st.Register(param.(*symbolCell).Value())
+	}
+
+	body.ExpandExpression(args[1])
+
+	self.st.DownLevel()
+
 	body.Write(OP_RET, nil)
 	self.Write(OP_LDF, body.Code())
 }
@@ -148,7 +148,7 @@ func (self *codeWriter) expandFunctionCall(function cell, args []cell) {
 }
 
 func generateCode(ast cell) cell {
-	code := newCodeWriter()
+	code := newCodeWriter(newSymbolTable())
 	code.ExpandExpression(ast)
 	code.Write(OP_HALT, nil)
 	return code.Code()

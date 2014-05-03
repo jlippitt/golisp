@@ -16,6 +16,8 @@ type list interface {
 	Current() cell
 	Next() list
 	IsNil() bool
+	At(int64) cell
+	Slice() []cell
 }
 
 // NIL
@@ -38,6 +40,14 @@ func (self *nilCell) Next() list {
 
 func (self *nilCell) IsNil() bool {
 	return true
+}
+
+func (self *nilCell) At(index int64) cell {
+	panic("Tried to find value in empty list")
+}
+
+func (self *nilCell) Slice() []cell {
+	return nil
 }
 
 func (self *nilCell) Equal(other cell) bool {
@@ -111,6 +121,27 @@ func (self *consCell) Next() list {
 	return self.cdr.(list)
 }
 
+func (self *consCell) At(index int64) cell {
+	var it list = self
+
+	for i := int64(0); i < index; i++ {
+		it = it.Next()
+	}
+
+	return it.Current()
+}
+
+func (self *consCell) Slice() []cell {
+	var elements []cell
+	var it list
+
+	for it = self; !it.IsNil(); it = it.Next() {
+		elements = append(elements, it.Current())
+	}
+
+	return elements
+}
+
 func (self *consCell) IsNil() bool {
 	return false
 }
@@ -171,6 +202,8 @@ func (self *opCell) String() string {
 		output = "LDC"
 	case OP_LDF:
 		output = "LDF"
+	case OP_LD:
+		output = "LD"
 	case OP_CONS:
 		output = "CONS"
 	case OP_AP:

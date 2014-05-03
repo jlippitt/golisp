@@ -10,6 +10,7 @@ const (
 	OP_NIL operation = iota
 	OP_LDC
 	OP_LDF
+	OP_LD
 	OP_CONS
 	OP_AP
 	OP_RET
@@ -44,6 +45,12 @@ func run(code cell) cell {
 
 	jumpTable[OP_LDF] = func() {
 		push(&stack, newConsCell(op.Data(), env))
+	}
+
+	jumpTable[OP_LD] = func() {
+		depth := op.Data().(*consCell).Car().(*fixNumCell).Value()
+		position := op.Data().(*consCell).Cdr().(*fixNumCell).Value()
+		push(&stack, env.(list).At(depth).(list).At(position))
 	}
 
 	jumpTable[OP_CONS] = func() {
