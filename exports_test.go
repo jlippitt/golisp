@@ -18,7 +18,15 @@ func checkResult(t *testing.T, code string, expected cell) {
 }
 
 func TestOperators(t *testing.T) {
+	// Arithmetic
 	checkResult(t, "(+ 6 5)", newFixNumCell(11))
+	checkResult(t, "(- 6 5)", newFixNumCell(1))
+	checkResult(t, "(* 6 5)", newFixNumCell(30))
+	checkResult(t, "(/ 30 5)", newFixNumCell(6))
+
+	// Equality
+	checkResult(t, "(= 5 5)", newTrueCell())
+	checkResult(t, "(= 5 6)", newNilCell())
 }
 
 func TestIfCondition(t *testing.T) {
@@ -26,4 +34,8 @@ func TestIfCondition(t *testing.T) {
 	checkResult(t, "(if (= 10 11) 1 2)", newFixNumCell(2))
 	checkResult(t, "(if (= 10 10) (* 2 2) 2)", newFixNumCell(4))
 	checkResult(t, "(if (= 10 11) 1 (* 4 4))", newFixNumCell(16))
+}
+
+func TestFunctionApplication(t *testing.T) {
+	checkResult(t, "((fn (a b) (+ a b)) 6 5)", newFixNumCell(11))
 }
