@@ -11,6 +11,7 @@ const (
 	opLdc
 	opLdf
 	opLd
+	opSt
 	opAp
 	opRet
 	opSel
@@ -32,7 +33,7 @@ func run(code cell) cell {
 	var op *opCell
 
 	var stack cell = newNilCell()
-	var env cell = newNilCell()
+	var env cell = newConsCell(newNilCell(), newNilCell())
 	var dump cell = newNilCell()
 
 	running := true
@@ -40,24 +41,52 @@ func run(code cell) cell {
 	var jumpTable [opStop + 1]func()
 
 	jumpTable[opNil] = func() {
+		// Push a nil cell on to the stack
 		push(&stack, newNilCell())
 	}
 
 	jumpTable[opLdc] = func() {
+		// Push a constant on to the stack
 		push(&stack, op.Data())
 	}
 
 	jumpTable[opLdf] = func() {
+		// Push a function (closure) on to the stack
 		push(&stack, newConsCell(op.Data(), env))
 	}
 
 	jumpTable[opLd] = func() {
+		// Load the value of a variable
 		depth := op.Data().(*consCell).Car().(*fixNumCell).Value()
 		position := op.Data().(*consCell).Cdr().(*fixNumCell).Value()
 		push(&stack, env.(list).At(depth).(list).At(position))
 	}
 
+	jumpTable[opSt] = func() {
+		// Store a value as a variable
+		env := env.(*consCell)
+
+		var scope cell = env.Car()
+
+		value := newConsCell(pop(&stack), newNilCell())
+
+		switch scope.(type) {
+		case *consCell:
+			var last list
+
+			for it := scope.(list); !it.IsNil(); it = it.Next() {
+				last = it
+			}
+
+			last.(*consCell).SetCdr(value)
+
+		case *nilCell:
+			env.SetCar(value)
+		}
+	}
+
 	jumpTable[opAp] = func() {
+		// Apply a function
 		function := pop(&stack).(*consCell)
 		args := pop(&stack)
 
@@ -75,6 +104,7 @@ func run(code cell) cell {
 	}
 
 	jumpTable[opRet] = func() {
+		// Return from a function
 		returnValue := pop(&stack)
 
 		// Restore old environment
@@ -86,6 +116,7 @@ func run(code cell) cell {
 	}
 
 	jumpTable[opSel] = func() {
+		// Choose between two code paths
 		data := op.Data().(*consCell)
 
 		push(&dump, code)
@@ -99,24 +130,29 @@ func run(code cell) cell {
 	}
 
 	jumpTable[opJoin] = func() {
+		// Join the main code path again
 		code = pop(&dump)
 	}
 
 	jumpTable[opCons] = func() {
+		// Create a cons cell
 		car := pop(&stack)
 		cdr := pop(&stack)
 		push(&stack, newConsCell(car, cdr))
 	}
 
 	jumpTable[opCar] = func() {
+		// Get the head (car) of a cons cell
 		push(&stack, pop(&stack).(*consCell).Car())
 	}
 
 	jumpTable[opCdr] = func() {
+		// Get the tail (cdr) of a cons cell
 		push(&stack, pop(&stack).(*consCell).Cdr())
 	}
 
 	jumpTable[opAtom] = func() {
+		// Is the cell an atom (i.e. non-list cell)?
 		switch pop(&stack).(type) {
 		case list:
 			push(&stack, newNilCell())
@@ -126,34 +162,40 @@ func run(code cell) cell {
 	}
 
 	jumpTable[opAdd] = func() {
+		// Add two integers
 		lhs := pop(&stack).(*fixNumCell).Value()
 		rhs := pop(&stack).(*fixNumCell).Value()
 		push(&stack, newFixNumCell(lhs+rhs))
 	}
 
 	jumpTable[opSub] = func() {
+		// Subtract two integers
 		lhs := pop(&stack).(*fixNumCell).Value()
 		rhs := pop(&stack).(*fixNumCell).Value()
 		push(&stack, newFixNumCell(lhs-rhs))
 	}
 
 	jumpTable[opMul] = func() {
+		// Multiply two integers
 		lhs := pop(&stack).(*fixNumCell).Value()
 		rhs := pop(&stack).(*fixNumCell).Value()
 		push(&stack, newFixNumCell(lhs*rhs))
 	}
 
 	jumpTable[opDiv] = func() {
+		// Divide two integers
 		lhs := pop(&stack).(*fixNumCell).Value()
 		rhs := pop(&stack).(*fixNumCell).Value()
 		push(&stack, newFixNumCell(lhs/rhs))
 	}
 
 	jumpTable[opNeg] = func() {
+		// Negate an integer
 		push(&stack, newFixNumCell(-pop(&stack).(*fixNumCell).Value()))
 	}
 
 	jumpTable[opEq] = func() {
+		// Are two values equal?
 		lhs := pop(&stack)
 		rhs := pop(&stack)
 
@@ -165,6 +207,7 @@ func run(code cell) cell {
 	}
 
 	jumpTable[opStop] = func() {
+		// Stop execution
 		running = false
 	}
 

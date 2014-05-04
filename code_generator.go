@@ -53,6 +53,9 @@ func (self *codeWriter) expandForm(node *consCell) {
 		case "if":
 			self.expandIf(args)
 			return
+		case "def":
+			self.expandDefinition(args)
+			return
 		case "fn":
 			self.expandAnonymousFunction(args)
 			return
@@ -91,6 +94,23 @@ func (self *codeWriter) expandIf(args []cell) {
 	rhs.Write(opJoin, nil)
 
 	self.Write(opSel, newConsCell(lhs.Code(), rhs.Code()))
+}
+
+func (self *codeWriter) expandDefinition(args []cell) {
+	name := args[0].(*symbolCell).Value()
+
+	if len(args) > 2 {
+		// Function definition
+		self.expandAnonymousFunction(args[1:])
+	} else if len(args) == 2 {
+		// Variable definition
+		self.ExpandExpression(args[1])
+	} else {
+		panic("'def' expects at least 2 arguments")
+	}
+
+	self.st.Register(name) // TODO: What about definitions inside conditionals?
+	self.Write(opSt, nil)
 }
 
 func (self *codeWriter) expandAnonymousFunction(args []cell) {

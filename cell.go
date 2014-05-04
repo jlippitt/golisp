@@ -204,6 +204,8 @@ func (self *opCell) String() string {
 		output = "LDF"
 	case opLd:
 		output = "LD"
+	case opSt:
+		output = "ST"
 	case opAp:
 		output = "AP"
 	case opRet:
