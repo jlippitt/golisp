@@ -102,7 +102,9 @@ func (self *codeWriter) expandAnonymousFunction(args []cell) {
 		self.st.Register(param.(*symbolCell).Value())
 	}
 
-	body.ExpandExpression(args[1])
+	for _, expression := range args[1:] {
+		body.ExpandExpression(expression)
+	}
 
 	self.st.DownLevel()
 
