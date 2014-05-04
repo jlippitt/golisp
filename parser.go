@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 func parse(input string) cell {
 	var parseExpression, parseCons func() cell
 
@@ -23,7 +25,7 @@ func parse(input string) cell {
 		case TOK_FIXNUM:
 			value = newFixNumCell(tokenizer.IntValue())
 		default:
-			panic("Unexpected token")
+			panic(fmt.Sprintf("Unexpected token: %d", tokenizer.Type()))
 		}
 
 		return value
@@ -46,5 +48,13 @@ func parse(input string) cell {
 		return cons
 	}
 
-	return parseExpression()
+	var ast cell = newNilCell()
+	var it *cell = &ast
+
+	for tokenizer.Type() != TOK_EOF {
+		pushBack(&it, parseExpression())
+		tokenizer.Next()
+	}
+
+	return ast
 }

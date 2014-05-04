@@ -4,25 +4,49 @@ import "testing"
 
 func TestCodeGeneration(t *testing.T) {
 	ast := newConsCell(
-		newSymbolCell("+"),
 		newConsCell(
-			newFixNumCell(6),
+			newSymbolCell("-"),
 			newConsCell(
-				newFixNumCell(5),
-				newNilCell(),
+				newFixNumCell(3),
+				newConsCell(
+					newFixNumCell(2),
+					newNilCell(),
+				),
 			),
+		),
+		newConsCell(
+			newConsCell(
+				newSymbolCell("+"),
+				newConsCell(
+					newFixNumCell(6),
+					newConsCell(
+						newFixNumCell(5),
+						newNilCell(),
+					),
+				),
+			),
+			newNilCell(),
 		),
 	)
 
 	expected := newConsCell(
-		newOpCell(opLdc, newFixNumCell(5)),
+		newOpCell(opLdc, newFixNumCell(2)),
 		newConsCell(
-			newOpCell(opLdc, newFixNumCell(6)),
+			newOpCell(opLdc, newFixNumCell(3)),
 			newConsCell(
-				newOpCell(opAdd, nil),
+				newOpCell(opSub, nil),
 				newConsCell(
-					newOpCell(opStop, nil),
-					newNilCell(),
+					newOpCell(opLdc, newFixNumCell(5)),
+					newConsCell(
+						newOpCell(opLdc, newFixNumCell(6)),
+						newConsCell(
+							newOpCell(opAdd, nil),
+							newConsCell(
+								newOpCell(opStop, nil),
+								newNilCell(),
+							),
+						),
+					),
 				),
 			),
 		),

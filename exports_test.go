@@ -63,3 +63,7 @@ func TestFunctionApplication(t *testing.T) {
 	checkResult(t, "((fn () (+ 6 5)))", newFixNumCell(11))
 	checkResult(t, "((fn (a b) (+ a b)) 6 5)", newFixNumCell(11))
 }
+
+func TestSequences(t *testing.T) {
+	checkResult(t, "(- 3 2)\n(+ 6 5)", newFixNumCell(11))
+}

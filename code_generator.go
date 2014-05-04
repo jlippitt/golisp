@@ -184,7 +184,11 @@ func (self *codeWriter) expandFunctionCall(function cell, args []cell) {
 
 func generateCode(ast cell) cell {
 	code := newCodeWriter(newSymbolTable())
-	code.ExpandExpression(ast)
+
+	for el := ast.(list); !el.IsNil(); el = el.Next() {
+		code.ExpandExpression(el.Current())
+	}
+
 	code.Write(opStop, nil)
 	return code.Code()
 }
