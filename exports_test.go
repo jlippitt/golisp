@@ -73,3 +73,13 @@ func TestStorage(t *testing.T) {
 	checkResult(t, "(def a 1) (def b 2) (+ a b)", newFixNumCell(3))
 	checkResult(t, "(def add (a b) (+ a b))\n(def square (x) (* x x))\n(square (add 6 5))", newFixNumCell(121))
 }
+
+func TestRecursion(t *testing.T) {
+	code := `(def fac (n)
+                 (if (= n 0)
+                     1
+                     (* n (fac (- n 1)))))
+             (fac 6)`
+
+	checkResult(t, code, newFixNumCell(720))
+}

@@ -34,10 +34,15 @@ func (self *codeWriter) ExpandExpression(node cell) {
 		self.Write(opLdc, newFixNumCell(node.Value()))
 	case *symbolCell:
 		location := self.st.Locate(node.Value())
-		self.Write(opLd, newConsCell(
-			newFixNumCell(location.Depth),
-			newFixNumCell(location.Position),
-		))
+
+		if location != nil {
+			self.Write(opLd, newConsCell(
+				newFixNumCell(location.Depth),
+				newFixNumCell(location.Position),
+			))
+		} else {
+			panic(fmt.Sprintf("Could not find symbol '%s'\n", node.Value()))
+		}
 	default:
 		panic("Unexpected node type in expression")
 	}
@@ -101,15 +106,16 @@ func (self *codeWriter) expandDefinition(args []cell) {
 
 	if len(args) > 2 {
 		// Function definition
+		self.st.Register(name)
 		self.expandAnonymousFunction(args[1:])
 	} else if len(args) == 2 {
 		// Variable definition
 		self.ExpandExpression(args[1])
+		self.st.Register(name)
 	} else {
 		panic("'def' expects at least 2 arguments")
 	}
 
-	self.st.Register(name) // TODO: What about definitions inside conditionals?
 	self.Write(opSt, nil)
 }
 
