@@ -222,6 +222,8 @@ func (self *opCell) String() string {
 		output = "CDR"
 	case opAtom:
 		output = "ATOM"
+	case opAppend:
+		output = "APPEND"
 	case opAdd:
 		output = "ADD"
 	case opSub:
@@ -234,6 +236,18 @@ func (self *opCell) String() string {
 		output = "NEG"
 	case opEq:
 		output = "EQ"
+	case opNeq:
+		output = "NEQ"
+	case opGt:
+		output = "GT"
+	case opGte:
+		output = "GTE"
+	case opLt:
+		output = "LT"
+	case opLte:
+		output = "LTE"
+	case opNot:
+		output = "NOT"
 	case opStop:
 		output = "STOP"
 	default:

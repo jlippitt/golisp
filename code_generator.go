@@ -64,10 +64,13 @@ func (self *codeWriter) expandForm(node *consCell) {
 		case "fn":
 			self.expandAnonymousFunction(args)
 			return
+		case "let":
+			self.expandLet(args)
+			return
 		case "cons":
 			self.expandCons(args)
 			return
-		case "car", "cdr", "atom", "+", "-", "*", "/", "=":
+		case "car", "cdr", "atom", "append", "+", "-", "*", "/", "=", "!=", "<", "<=", ">", ">=", "not":
 			self.expandOperator(name, args)
 			return
 		}
@@ -132,10 +135,42 @@ func (self *codeWriter) expandAnonymousFunction(args []cell) {
 		body.ExpandExpression(expression)
 	}
 
+	body.Write(opRet, nil)
+
 	self.st.DownLevel()
 
-	body.Write(opRet, nil)
 	self.Write(opLdf, body.Code())
+}
+
+func (self *codeWriter) expandLet(args []cell) {
+	var names []string
+
+	body := newCodeWriter(self.st)
+
+	self.Write(opNil, nil)
+
+	//for _, arg := range args[0 : len(args)-1] {
+	for i := len(args) - 2; i >= 0; i-- {
+		it := args[i].(list)
+		names = append(names, it.Current().(*symbolCell).Value())
+		it = it.Next()
+		self.ExpandExpression(it.Current())
+		self.Write(opCons, nil)
+	}
+
+	self.st.UpLevel()
+
+	for i := len(names) - 1; i >= 0; i-- {
+		self.st.Register(names[i])
+	}
+
+	body.ExpandExpression(args[len(args)-1])
+	body.Write(opRet, nil)
+
+	self.st.DownLevel()
+
+	self.Write(opLdf, body.Code())
+	self.Write(opAp, nil)
 }
 
 func (self *codeWriter) expandCons(args []cell) {
@@ -162,6 +197,9 @@ func (self *codeWriter) expandOperator(name string, args []cell) {
 	case "atom":
 		op = opAtom
 		minArgs, maxArgs = 1, 1
+	case "append":
+		op = opAppend
+		minArgs = 2
 	case "+":
 		op = opAdd
 		minArgs = 2
@@ -181,6 +219,25 @@ func (self *codeWriter) expandOperator(name string, args []cell) {
 	case "=":
 		op = opEq
 		minArgs = 2
+	case "!=":
+		op = opNeq
+		minArgs = 2
+	case ">":
+		op = opGt
+		minArgs = 2
+	case ">=":
+		op = opGte
+		minArgs = 2
+	case "<":
+		op = opLt
+		minArgs = 2
+	case "<=":
+		op = opLte
+		minArgs = 2
+	case "not":
+		op = opNot
+		minArgs = 1
+		maxArgs = 1
 	}
 
 	if minArgs != 0 && len(args) < minArgs {

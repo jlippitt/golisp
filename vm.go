@@ -20,12 +20,19 @@ const (
 	opCar
 	opCdr
 	opAtom
+	opAppend
 	opAdd
 	opSub
 	opMul
 	opDiv
 	opNeg
 	opEq
+	opNeq
+	opGt
+	opGte
+	opLt
+	opLte
+	opNot
 	opStop
 )
 
@@ -161,6 +168,22 @@ func run(code cell) cell {
 		}
 	}
 
+	jumpTable[opAppend] = func() {
+		// Append two lists
+		var result cell = newNilCell()
+		var it *cell = &result
+
+		for lhs := pop(&stack).(list); !lhs.IsNil(); lhs = lhs.Next() {
+			pushBack(&it, lhs.Current())
+		}
+
+		for rhs := pop(&stack).(list); !rhs.IsNil(); rhs = rhs.Next() {
+			pushBack(&it, rhs.Current())
+		}
+
+		push(&stack, result)
+	}
+
 	jumpTable[opAdd] = func() {
 		// Add two integers
 		lhs := pop(&stack).(*fixNumCell).Value()
@@ -195,13 +218,83 @@ func run(code cell) cell {
 	}
 
 	jumpTable[opEq] = func() {
-		// Are two values equal?
+		// Equality
 		lhs := pop(&stack)
 		rhs := pop(&stack)
 
 		if lhs.Equal(rhs) {
 			push(&stack, newTrueCell())
 		} else {
+			push(&stack, newNilCell())
+		}
+	}
+
+	jumpTable[opNeq] = func() {
+		// Inequality
+		lhs := pop(&stack)
+		rhs := pop(&stack)
+
+		if lhs.Equal(rhs) {
+			push(&stack, newNilCell())
+		} else {
+			push(&stack, newTrueCell())
+		}
+	}
+
+	jumpTable[opGt] = func() {
+		// Greater than
+		lhs := pop(&stack)
+		rhs := pop(&stack)
+
+		if lhs.(*fixNumCell).Value() > rhs.(*fixNumCell).Value() {
+			push(&stack, newTrueCell())
+		} else {
+			push(&stack, newNilCell())
+		}
+	}
+
+	jumpTable[opGte] = func() {
+		// Greater than or equal
+		lhs := pop(&stack)
+		rhs := pop(&stack)
+
+		if lhs.(*fixNumCell).Value() >= rhs.(*fixNumCell).Value() {
+			push(&stack, newTrueCell())
+		} else {
+			push(&stack, newNilCell())
+		}
+	}
+
+	jumpTable[opLt] = func() {
+		// Less than
+		lhs := pop(&stack)
+		rhs := pop(&stack)
+
+		if lhs.(*fixNumCell).Value() < rhs.(*fixNumCell).Value() {
+			push(&stack, newTrueCell())
+		} else {
+			push(&stack, newNilCell())
+		}
+	}
+
+	jumpTable[opLte] = func() {
+		// Less than or equal
+		lhs := pop(&stack)
+		rhs := pop(&stack)
+
+		if lhs.(*fixNumCell).Value() <= rhs.(*fixNumCell).Value() {
+			push(&stack, newTrueCell())
+		} else {
+			push(&stack, newNilCell())
+		}
+	}
+
+	jumpTable[opNot] = func() {
+		// Boolean negation
+		switch pop(&stack).(type) {
+		case *nilCell:
+			push(&stack, newTrueCell())
+		default:
 			push(&stack, newNilCell())
 		}
 	}
